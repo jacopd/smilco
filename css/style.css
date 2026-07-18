@@ -316,3 +316,8 @@ h2 {
 }
 
 .site-footer p { max-width: 56rem; margin: 0.4rem auto; }
+
+/* Team page */
+.team-link { margin-top: 2rem; }
+.team-link a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.team-link a:hover { text-decoration: underline; }
