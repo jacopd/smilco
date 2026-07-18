@@ -149,6 +149,52 @@
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var W, H, points;
 
+    var CONSTELLATIONS = [
+      {
+        name: 'L Y R A',
+        shape: [
+          { x: 0.00, y: 0.00, r: 2.6 },
+          { x: 0.045, y: 0.075, r: 1.6 },
+          { x: 0.135, y: 0.095, r: 1.5 },
+          { x: 0.155, y: 0.21, r: 1.5 },
+          { x: 0.065, y: 0.19, r: 1.6 }
+        ],
+        lines: [[0,1],[1,2],[2,3],[3,4],[4,1]],
+        size: 0.32
+      },
+      {
+        name: 'L I B R A',
+        shape: [
+          { x: 0.00, y: 0.02, r: 2.0 },
+          { x: 0.11, y: 0.16, r: 2.1 },
+          { x: 0.22, y: 0.00, r: 1.6 },
+          { x: 0.15, y: 0.33, r: 1.5 },
+          { x: 0.30, y: 0.30, r: 1.4 }
+        ],
+        lines: [[0,1],[0,2],[1,2],[1,3],[2,4]],
+        size: 0.3
+      },
+      {
+        name: 'C O R O N A  B O R E A L I S',
+        shape: [
+          { x: 0.00, y: 0.10, r: 1.4 },
+          { x: 0.07, y: 0.03, r: 1.5 },
+          { x: 0.15, y: 0.00, r: 1.5 },
+          { x: 0.23, y: 0.02, r: 2.3 },
+          { x: 0.31, y: 0.06, r: 1.5 },
+          { x: 0.37, y: 0.13, r: 1.4 },
+          { x: 0.41, y: 0.22, r: 1.3 }
+        ],
+        lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]],
+        size: 0.28
+      }
+    ];
+    var mouse = { x: -9999, y: -9999 };
+    var DWELL_MS = 550;
+    var active = null;
+    var nextAppearance = performance.now() + 15000 + Math.random() * 30000;
+    var lastIndex = -1;
+
     function resize() {
       W = window.innerWidth; H = window.innerHeight;
       canvas.width = W * dpr; canvas.height = H * dpr;
@@ -165,6 +211,27 @@
           r: 1 + Math.random() * 1.6
         });
       }
+    }
+
+    function spawnConstellation() {
+      var i;
+      do { i = Math.floor(Math.random() * CONSTELLATIONS.length); }
+      while (CONSTELLATIONS.length > 1 && i === lastIndex);
+      lastIndex = i;
+      var c = CONSTELLATIONS[i];
+      var scale = Math.min(W, H) * c.size;
+      var fromLeft = Math.random() < 0.5;
+      active = {
+        def: c,
+        scale: scale,
+        x: fromLeft ? -scale * 0.5 : W + scale * 0.1,
+        y: H * (0.05 + Math.random() * 0.5),
+        vx: (fromLeft ? 1 : -1) * (0.03 + Math.random() * 0.02),
+        vy: (Math.random() - 0.5) * 0.015,
+        born: performance.now(),
+        hoverStart: 0,
+        labelAlpha: 0
+      };
     }
 
     var LINK = 130;
@@ -184,23 +251,78 @@
           if (d < LINK) {
             ctx.strokeStyle = 'rgba(139, 155, 255,' + (0.16 * (1 - d / LINK)) + ')';
             ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
           }
         }
       }
       for (var i = 0; i < points.length; i++) {
         var p = points[i];
         ctx.fillStyle = 'rgba(169, 178, 194, 0.55)';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
       }
+
+      var now = performance.now();
+      if (!active && now > nextAppearance) spawnConstellation();
+      if (active) {
+        active.x += active.vx; active.y += active.vy;
+        var gone = (active.vx > 0 && active.x - active.scale * 0.1 > W) ||
+                   (active.vx < 0 && active.x + active.scale * 0.5 < 0);
+        if (gone) {
+          active = null;
+          nextAppearance = now + 60000 + Math.random() * 120000;
+        }
+      }
+      if (active) {
+        var age = (now - active.born) / 6000;
+        var vis = Math.min(1, age);
+        var def = active.def;
+        var pts = def.shape.map(function (s) {
+          return { x: active.x + s.x * active.scale, y: active.y + s.y * active.scale, r: s.r };
+        });
+        ctx.strokeStyle = 'rgba(200, 210, 255,' + (0.22 * vis) + ')';
+        ctx.lineWidth = 1;
+        for (var k = 0; k < def.lines.length; k++) {
+          var l = def.lines[k];
+          ctx.beginPath(); ctx.moveTo(pts[l[0]].x, pts[l[0]].y); ctx.lineTo(pts[l[1]].x, pts[l[1]].y); ctx.stroke();
+        }
+        for (var k = 0; k < pts.length; k++) {
+          ctx.fillStyle = k === 0
+            ? 'rgba(235, 240, 255,' + (0.95 * vis) + ')'
+            : 'rgba(210, 220, 250,' + (0.8 * vis) + ')';
+          ctx.beginPath(); ctx.arc(pts[k].x, pts[k].y, pts[k].r, 0, Math.PI * 2); ctx.fill();
+        }
+        var minX = pts[0].x, maxX = pts[0].x, minY = pts[0].y, maxY = pts[0].y;
+        for (var k = 1; k < pts.length; k++) {
+          minX = Math.min(minX, pts[k].x); maxX = Math.max(maxX, pts[k].x);
+          minY = Math.min(minY, pts[k].y); maxY = Math.max(maxY, pts[k].y);
+        }
+        var PAD = 28;
+        var near = mouse.x > minX - PAD && mouse.x < maxX + PAD &&
+                   mouse.y > minY - PAD && mouse.y < maxY + PAD;
+        if (near) {
+          if (!active.hoverStart) active.hoverStart = now;
+          if (now - active.hoverStart > DWELL_MS) active.labelAlpha = Math.min(1, active.labelAlpha + 0.04);
+        } else {
+          active.hoverStart = 0;
+          active.labelAlpha = Math.max(0, active.labelAlpha - 0.03);
+        }
+        if (active.labelAlpha > 0) {
+          ctx.font = '500 12px "Public Sans", system-ui, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          var lx = maxX + 16, ly = minY + (maxY - minY) * 0.5;
+          if (lx + 110 > W) { ctx.textAlign = 'right'; lx = minX - 16; }
+          ctx.fillStyle = 'rgba(200, 210, 255,' + (0.55 * active.labelAlpha * vis) + ')';
+          ctx.fillText(def.name, lx, ly);
+        }
+      }
+
       requestAnimationFrame(frame);
     }
 
+    window.addEventListener('mousemove', function (e) {
+      mouse.x = e.clientX; mouse.y = e.clientY;
+    });
     window.addEventListener('resize', resize);
     resize();
     requestAnimationFrame(frame);
