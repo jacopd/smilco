@@ -62,21 +62,7 @@ h1, h2, h3, .wordmark {
   text-decoration: none;
 }
 
-.wordmark .tm {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.1em;
-  height: 2.1em;
-  border: 0.14em solid currentColor;
-  border-radius: 50%;
-  font-size: 0.26em;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  vertical-align: 1.4em;
-  margin-left: 0.35em;
-  color: var(--slate);
-}
+.wordmark .tm { font-size: 0.6em; vertical-align: super; color: var(--slate); }
 
 .site-header nav { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
 
