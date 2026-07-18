@@ -265,6 +265,43 @@ h2 {
 .why-cols p { margin: 0; color: var(--slate); }
 .why-cols strong { color: var(--ink); }
 
+.team {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+  max-width: 60rem;
+}
+
+.person {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.75rem;
+}
+
+.person h3 {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.person .role {
+  font-family: "Public Sans", system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-ink);
+}
+
+.person p { margin: 0; color: var(--slate); }
+.person strong { color: var(--ink); }
+
 /* Start */
 .start { text-align: left; }
 .start p { max-width: 38rem; color: var(--slate); margin: 0 0 1.75rem; }
