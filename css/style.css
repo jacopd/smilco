@@ -321,3 +321,11 @@ h2 {
 .team-link { margin-top: 2rem; }
 .team-link a { color: var(--accent); font-weight: 600; text-decoration: none; }
 .team-link a:hover { text-decoration: underline; }
+
+/* Legal pages */
+.legal-body { max-width: 44rem; }
+.legal-body h3 { font-weight: 700; font-size: 1.1rem; margin: 1.75rem 0 0.5rem; }
+.legal-body p { color: var(--slate); margin: 0 0 0.75rem; }
+.legal-body a { color: var(--accent); }
+.site-footer a { color: var(--slate); }
+.site-footer a:hover { color: var(--accent); }
