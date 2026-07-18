@@ -25,6 +25,9 @@
   <main id="top">
 
     <section class="hero">
+      <canvas id="starfield" aria-hidden="true"></canvas>
+      <div class="glow one" aria-hidden="true"></div>
+      <div class="glow two" aria-hidden="true"></div>
       <div class="hero-inner">
         <p class="eyebrow">AI integration strategy for small business</p>
         <h1>Put AI to work<br>in your business.</h1>
@@ -144,6 +147,107 @@
     <p>SMILCO provides technology consulting services only and is not a law firm.
        Nothing on this site is legal advice.</p>
   </footer>
+
+  <script>
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var hero = document.querySelector('.hero');
+    var canvas = document.getElementById('starfield');
+    if (!hero || !canvas) return;
+    var ctx = canvas.getContext('2d');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W, H, points, lyra;
+
+    // Lyra: Vega + the parallelogram (zeta, delta, gamma, beta), normalized shape.
+    var LYRA_SHAPE = [
+      { x: 0.00, y: 0.00, r: 2.6 },   // Vega
+      { x: 0.045, y: 0.075, r: 1.6 }, // zeta
+      { x: 0.135, y: 0.095, r: 1.5 }, // delta
+      { x: 0.155, y: 0.21, r: 1.5 },  // gamma
+      { x: 0.065, y: 0.19, r: 1.6 }   // beta
+    ];
+    var LYRA_LINES = [[0,1],[1,2],[2,3],[3,4],[4,1]];
+
+    function resize() {
+      var rect = hero.getBoundingClientRect();
+      W = rect.width; H = rect.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var count = Math.max(24, Math.min(60, Math.round(W * H / 24000)));
+      points = [];
+      for (var i = 0; i < count; i++) {
+        points.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.2,
+          vy: (Math.random() - 0.5) * 0.2,
+          r: 1 + Math.random() * 1.5
+        });
+      }
+      // Lyra drifts as one body through the hero's upper-right quarter.
+      lyra = {
+        x: W * 0.62 + Math.random() * W * 0.1,
+        y: H * 0.12 + Math.random() * H * 0.1,
+        vx: 0.045, vy: 0.02,
+        scale: Math.min(W, H) * 0.55
+      };
+    }
+
+    var LINK = 120;
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+
+      for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -20) p.x = W + 20; else if (p.x > W + 20) p.x = -20;
+        if (p.y < -20) p.y = H + 20; else if (p.y > H + 20) p.y = -20;
+      }
+      for (var i = 0; i < points.length; i++) {
+        for (var j = i + 1; j < points.length; j++) {
+          var a = points[i], b = points[j];
+          var dx = a.x - b.x, dy = a.y - b.y;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          if (d < LINK) {
+            ctx.strokeStyle = 'rgba(139, 155, 255,' + (0.14 * (1 - d / LINK)) + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        ctx.fillStyle = 'rgba(169, 178, 194, 0.5)';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Lyra, slightly brighter, drifting whole.
+      lyra.x += lyra.vx; lyra.y += lyra.vy;
+      if (lyra.x > W + lyra.scale * 0.3) { lyra.x = -lyra.scale * 0.3; }
+      if (lyra.y > H + lyra.scale * 0.3) { lyra.y = -lyra.scale * 0.3; }
+      var pts = LYRA_SHAPE.map(function (s) {
+        return { x: lyra.x + s.x * lyra.scale, y: lyra.y + s.y * lyra.scale, r: s.r };
+      });
+      ctx.strokeStyle = 'rgba(200, 210, 255, 0.22)';
+      ctx.lineWidth = 1;
+      for (var k = 0; k < LYRA_LINES.length; k++) {
+        var l = LYRA_LINES[k];
+        ctx.beginPath(); ctx.moveTo(pts[l[0]].x, pts[l[0]].y); ctx.lineTo(pts[l[1]].x, pts[l[1]].y); ctx.stroke();
+      }
+      for (var k = 0; k < pts.length; k++) {
+        ctx.fillStyle = k === 0 ? 'rgba(235, 240, 255, 0.95)' : 'rgba(210, 220, 250, 0.8)';
+        ctx.beginPath(); ctx.arc(pts[k].x, pts[k].y, pts[k].r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(frame);
+  })();
+  </script>
 
 </body>
 </html>

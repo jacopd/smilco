@@ -97,10 +97,53 @@ h1, h2, h3, .wordmark {
 }
 .button.ghost:hover { border-color: var(--hero-ink); background: transparent; }
 
-/* Hero — dark panel */
+/* Hero — dark panel with star field */
 .hero {
   background: var(--hero-bg);
   color: var(--hero-ink);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero #starfield {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero .glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  z-index: 0;
+  animation: drift 30s ease-in-out infinite alternate;
+}
+
+.hero .glow.one {
+  width: 34rem; height: 34rem;
+  left: -12rem; top: -14rem;
+  background: #2743E3;
+}
+
+.hero .glow.two {
+  width: 26rem; height: 26rem;
+  right: -8rem; bottom: -12rem;
+  background: #1B6E8F;
+  animation-duration: 40s;
+  animation-delay: -15s;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(6rem, 4rem) scale(1.15); }
+}
+
+.hero-inner { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .glow { animation: none; }
+  .hero #starfield { display: none; }
 }
 
 .hero-inner {
