@@ -167,6 +167,9 @@
       { x: 0.065, y: 0.19, r: 1.6 }   // beta
     ];
     var LYRA_LINES = [[0,1],[1,2],[2,3],[3,4],[4,1]];
+    var mouse = { x: -9999, y: -9999 };
+    var hoverStart = 0, labelAlpha = 0;
+    var DWELL_MS = 550;   // linger this long before the name appears
 
     function resize() {
       var rect = hero.getBoundingClientRect();
@@ -240,8 +243,45 @@
         ctx.beginPath(); ctx.arc(pts[k].x, pts[k].y, pts[k].r, 0, Math.PI * 2); ctx.fill();
       }
 
+      // Dwell-hover label: linger near Lyra and her name fades in.
+      var minX = pts[0].x, maxX = pts[0].x, minY = pts[0].y, maxY = pts[0].y;
+      for (var k = 1; k < pts.length; k++) {
+        minX = Math.min(minX, pts[k].x); maxX = Math.max(maxX, pts[k].x);
+        minY = Math.min(minY, pts[k].y); maxY = Math.max(maxY, pts[k].y);
+      }
+      var PAD = 28;
+      var near = mouse.x > minX - PAD && mouse.x < maxX + PAD &&
+                 mouse.y > minY - PAD && mouse.y < maxY + PAD;
+      var now = performance.now();
+      if (near) {
+        if (!hoverStart) hoverStart = now;
+        if (now - hoverStart > DWELL_MS) labelAlpha = Math.min(1, labelAlpha + 0.04);
+      } else {
+        hoverStart = 0;
+        labelAlpha = Math.max(0, labelAlpha - 0.03);
+      }
+      if (labelAlpha > 0) {
+        ctx.font = '500 12px "Public Sans", system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        var label = 'L Y R A';
+        var lx = maxX + 16, ly = minY + (maxY - minY) * 0.5;
+        if (lx + 60 > W) { ctx.textAlign = 'right'; lx = minX - 16; }
+        ctx.fillStyle = 'rgba(200, 210, 255,' + (0.55 * labelAlpha) + ')';
+        ctx.fillText(label, lx, ly);
+      }
+
       requestAnimationFrame(frame);
     }
+
+    hero.addEventListener('mousemove', function (e) {
+      var rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+    hero.addEventListener('mouseleave', function () {
+      mouse.x = -9999; mouse.y = -9999;
+    });
 
     window.addEventListener('resize', resize);
     resize();
