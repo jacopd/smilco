@@ -36,7 +36,19 @@
       letter-spacing: 0.04em;
       margin: 0;
     }
-    .wordmark sup { font-size: 0.35em; color: var(--slate); }
+    .wordmark sup {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.1em; height: 2.1em;
+      border: 0.14em solid currentColor;
+      border-radius: 50%;
+      font-size: 0.18em;
+      font-weight: 700;
+      vertical-align: 2.2em;
+      margin-left: 0.4em;
+      color: var(--slate);
+    }
     .tagline {
       text-transform: uppercase;
       letter-spacing: 0.18em;
@@ -64,7 +76,7 @@
 </head>
 <body>
   <main>
-    <h1 class="wordmark">SMILCO<sup>&#8482;</sup></h1>
+    <h1 class="wordmark">SMILCO<sup>TM</sup></h1>
     <p class="tagline">AI integration strategy for small business</p>
     <p class="soon">Something practical is coming.<br>
        Reach us in the meantime: <a href="mailto:contact@smilco.com">contact@smilco.com</a></p>
